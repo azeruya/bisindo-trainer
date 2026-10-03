@@ -4,6 +4,7 @@ import {
   HandLandmarker,
   DrawingUtils,
 } from "@mediapipe/tasks-vision";
+import { mediaPipeToDetectedHands, buildFeatures } from "../lib/landmark-core";
 
 export default function HandCamera() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -98,6 +99,21 @@ export default function HandCamera() {
         const result = handLandmarker.detectForVideo(
           video,
           performance.now()
+        );
+
+        const detectedHands = mediaPipeToDetectedHands(result);
+
+        const features = buildFeatures(detectedHands);
+
+        const finite = features.every(Number.isFinite);
+
+        console.log(
+          "hands:",
+          detectedHands.length,
+          "features:",
+          features.length,
+          "finite:",
+          finite
         );
 
         setHandCount(result.landmarks.length);
