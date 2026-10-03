@@ -1,12 +1,7 @@
-import HandCamera from "./components/HandCamera";
+import Recorder from "./components/Recorder";
 
 function App() {
-  return (
-    <main>
-      <h1>BISINDO Trainer</h1>
-      <HandCamera />
-    </main>
-  );
+  return <Recorder />;
 }
 
 export default App;

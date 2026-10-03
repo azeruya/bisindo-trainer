@@ -4,9 +4,16 @@ import {
   HandLandmarker,
   DrawingUtils,
 } from "@mediapipe/tasks-vision";
-import { mediaPipeToDetectedHands, buildFeatures } from "../lib/landmark-core";
+import { 
+    mediaPipeToDetectedHands, 
+    buildFeatures 
+} from "../lib/landmark-core";
 
-export default function HandCamera() {
+interface HandCameraProps {
+    onFeatures?: (features: number[]) => void;
+}
+
+export default function HandCamera({ onFeatures }: HandCameraProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -17,9 +24,12 @@ export default function HandCamera() {
   const [status, setStatus] = useState("Loading MediaPipe...");
   const [handCount, setHandCount] = useState(0);
 
+  const onFeaturesRef = useRef(onFeatures);
+
   useEffect(() => {
     let stream: MediaStream | null = null;
     let cancelled = false;
+    onFeaturesRef.current = onFeatures;
 
     async function setup() {
       try {
@@ -107,16 +117,17 @@ export default function HandCamera() {
 
         const finite = features.every(Number.isFinite);
 
-        console.log(
-          "hands:",
-          detectedHands.length,
-          "features:",
-          features.length,
-          "finite:",
-          finite
-        );
+        //console.log(
+        //  "hands:",
+        //  detectedHands.length,
+        //  "features:",
+        //  features.length,
+        //  "finite:",
+        //  finite
+        //);
 
-        setHandCount(result.landmarks.length);
+        setHandCount(detectedHands.length);
+        onFeaturesRef.current?.(features);
 
         const ctx = canvas.getContext("2d");
 

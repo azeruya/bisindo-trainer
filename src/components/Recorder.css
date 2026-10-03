@@ -1,0 +1,124 @@
+.recorder-page {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.recorder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.recorder-header h1 {
+  margin: 0 0 4px;
+  font-size: 1.75rem;
+}
+
+.recorder-header p {
+  margin: 0;
+  color: #71717a;
+}
+
+.session-badge {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #e4e4e7;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.recorder-controls {
+  display: grid;
+
+  grid-template-columns:
+    minmax(120px, 1fr)
+    minmax(100px, 0.7fr)
+    auto
+    auto
+    auto
+    auto
+    auto;
+
+  gap: 12px;
+  align-items: end;
+
+  padding: 16px;
+
+  background: white;
+
+  border: 1px solid #e4e4e7;
+  border-radius: 12px;
+
+  margin-bottom: 16px;
+}
+
+.recorder-controls label {
+  display: grid;
+  gap: 6px;
+}
+
+.recorder-controls label span,
+.attempt-status span {
+  color: #71717a;
+  font-size: 0.8rem;
+}
+
+.recorder-controls input,
+.recorder-controls select,
+.recorder-controls button {
+  min-height: 40px;
+  border: 1px solid #d4d4d8;
+  border-radius: 8px;
+  padding: 0 12px;
+}
+
+.recorder-controls input,
+.recorder-controls select {
+  background: white;
+}
+
+.attempt-status {
+  display: grid;
+  gap: 3px;
+  text-align: center;
+}
+
+.attempt-status strong {
+  font-size: 1.25rem;
+}
+
+.primary-button {
+  background: #18181b;
+  color: white;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.recording-banner {
+  margin-bottom: 12px;
+  padding: 10px 14px;
+
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+
+  font-weight: 600;
+}
+
+/* smaller screens */
+@media (max-width: 850px) {
+  .recorder-header {
+    flex-direction: column;
+  }
+
+  .recorder-controls {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
