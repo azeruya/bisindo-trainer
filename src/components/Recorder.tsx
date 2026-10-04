@@ -3,15 +3,21 @@ import HandCamera from "./HandCamera";
 import "./Recorder.css";
 
 interface RecordingAttempt {
-    attempt_id: string;
-    signer_id: string;
-    session_id: string;
-    label: string;
-    started_at: string;
-    frames: number[][];
+  attempt_id: string;
+  signer_id: string;
+  session_id: string;
+  label: string;
+  started_at: string;
+  frames: number[][];
+  quality: {
+    total_frames: number;
+    zero_hand_frames: number;
+    one_hand_frames: number;
+    two_hand_frames: number;
+  };
 }
 
-const LETTERS = ["A", "B", "C"]
+const LETTERS = ["A", "B", "C", "no_sign"]
 const RECORDING_DURATION_MS = 2000;
 const COUNTDOWN_SECONDS = 3;
 const RECORD_INTERVAL_MS = 40; // ~25 FPS
@@ -26,47 +32,62 @@ export default function Recorder() {
     const currentFramesRef = useRef<number[][]>([]);
     const recordingRef = useRef(false);
     const lastRecordedAtRef = useRef(0);
+    const zeroHandFramesRef = useRef(0);
+    const oneHandFramesRef = useRef(0);
+    const twoHandFramesRef = useRef(0);
     const sessionId = useMemo(() => {
         const now = new Date();
 
         return `${signerId}-${now.toISOString().replace(/[:.]/g, "-")}`;
     }, [signerId]);
 
-    const handleFeatures = useCallback((features: number[]) => {
-        if (!recordingRef.current) {
-            return;
-        }
+    const lastAttempt =
+        attempts.length > 0
+            ? attempts[attempts.length - 1]
+            : null;
+
+
+    const handleFeatures = useCallback(
+    (
+        features: number[],
+        handCount: number
+    ) => {
+        if (!recordingRef.current) return;
 
         const now = performance.now();
 
         if (
-            now - lastRecordedAtRef.current <
-            RECORD_INTERVAL_MS
+        now - lastRecordedAtRef.current <
+        RECORD_INTERVAL_MS
         ) {
-            return;
+        return;
         }
 
         lastRecordedAtRef.current = now;
 
         if (
-            features.length !== 132 ||
-            !features.every(Number.isFinite)
+        features.length !== 132 ||
+        !features.every(Number.isFinite)
         ) {
-            console.warn(
-            "Rejected invalid feature frame",
-            features
-            );
-            return;
+        return;
+        }
+
+        if (handCount === 0) {
+        zeroHandFramesRef.current += 1;
+        } else if (handCount === 1) {
+        oneHandFramesRef.current += 1;
+        } else if (handCount === 2) {
+        twoHandFramesRef.current += 1;
         }
 
         currentFramesRef.current.push([
-            ...features,
+        ...features,
         ]);
 
         setFrameCount(
-            currentFramesRef.current.length
+        currentFramesRef.current.length
         );
-        }, []);
+    }, []);
 
     async function startAttempt() {
         if (!signerId.trim()) {
@@ -94,6 +115,11 @@ export default function Recorder() {
 
         currentFramesRef.current = [];
         lastRecordedAtRef.current = 0;
+
+        zeroHandFramesRef.current = 0;
+        oneHandFramesRef.current = 0;
+        twoHandFramesRef.current = 0;
+
         setFrameCount(0);
 
         recordingRef.current = true;
@@ -122,13 +148,22 @@ export default function Recorder() {
         }
 
         const attempt: RecordingAttempt = {
-        attempt_id: crypto.randomUUID(),
-        signer_id: signerId.trim(),
-        session_id: sessionId,
-        label,
-        started_at:
-            new Date().toISOString(),
-        frames,
+            attempt_id: crypto.randomUUID(),
+            signer_id: signerId.trim(),
+            session_id: sessionId,
+            label,
+            started_at: new Date().toISOString(),
+            frames,
+
+            quality: {
+                total_frames: frames.length,
+                zero_hand_frames:
+                zeroHandFramesRef.current,
+                one_hand_frames:
+                oneHandFramesRef.current,
+                two_hand_frames:
+                twoHandFramesRef.current,
+            },
         };
 
         setAttempts((previous) => [
@@ -166,6 +201,18 @@ export default function Recorder() {
         anchor.click();
 
         URL.revokeObjectURL(url);
+    }
+
+    function undoLastAttempt() {
+        setAttempts((previous) => {
+            if (previous.length === 0) {
+            return previous;
+            }
+
+            return previous.slice(0, -1);
+        });
+
+        setFrameCount(0);
     }
 
     function clearAttempts() {
@@ -235,6 +282,15 @@ export default function Recorder() {
                 <strong>{frameCount}</strong>
             </div>
 
+            {lastAttempt && (
+                <p className="last-attempt">
+                    Last saved:{" "}
+                    <strong>{lastAttempt.label}</strong>
+                    {" — "}
+                    {lastAttempt.frames.length} frames
+                </p>
+            )}
+
             <button
                 className="primary-button"
                 onClick={startAttempt}
@@ -255,6 +311,16 @@ export default function Recorder() {
                 disabled={attempts.length === 0}
             >
                 Export JSONL
+            </button>
+
+            <button
+                onClick={undoLastAttempt}
+                disabled={
+                    attempts.length === 0 ||
+                    isRecording
+                }
+                >
+                Undo Last
             </button>
 
             <button

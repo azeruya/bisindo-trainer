@@ -10,7 +10,10 @@ import {
 } from "../lib/landmark-core";
 
 interface HandCameraProps {
-    onFeatures?: (features: number[]) => void;
+    onFeatures?: (
+        features: number[],
+        handCount: number
+    ) => void;
 }
 
 export default function HandCamera({ onFeatures }: HandCameraProps) {
@@ -127,7 +130,7 @@ export default function HandCamera({ onFeatures }: HandCameraProps) {
         //);
 
         setHandCount(detectedHands.length);
-        onFeaturesRef.current?.(features);
+        onFeaturesRef.current?.(features, detectedHands.length);
 
         const ctx = canvas.getContext("2d");
 
