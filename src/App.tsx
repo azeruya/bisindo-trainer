@@ -1,7 +1,7 @@
-import Recorder from "./components/Recorder";
+import Trainer from "./components/Trainer";
 
 function App() {
-  return <Recorder />;
+  return <Trainer />;
 }
 
 export default App;

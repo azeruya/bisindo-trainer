@@ -30,9 +30,12 @@ export default function HandCamera({ onFeatures }: HandCameraProps) {
   const onFeaturesRef = useRef(onFeatures);
 
   useEffect(() => {
+    onFeaturesRef.current = onFeatures;
+  }, [onFeatures]);
+
+  useEffect(() => {
     let stream: MediaStream | null = null;
     let cancelled = false;
-    onFeaturesRef.current = onFeatures;
 
     async function setup() {
       try {
@@ -179,16 +182,23 @@ export default function HandCamera({ onFeatures }: HandCameraProps) {
   }, []);
 
   return (
-    <div>
-      <h2>Hand Camera</h2>
+    <div className="hand-camera">
+      <div className="camera-status">
+        <span
+          className={
+            status === "Camera ready"
+              ? "camera-dot ready"
+              : "camera-dot"
+          }
+        />
 
-      <p>{status}</p>
-      <p>Hands detected: {handCount}</p>
+        {status}
+      </div>
 
       <div
+        className="camera-view"
         style={{
           position: "relative",
-          width: "min(900px, 100%)",
         }}
       >
         <video
@@ -198,27 +208,31 @@ export default function HandCamera({ onFeatures }: HandCameraProps) {
           style={{
             width: "100%",
             display: "block",
-
-            // mirror display only
-            transform: "scaleX(-1)",
+            transform:
+              "scaleX(-1)",
           }}
         />
 
         <canvas
           ref={canvasRef}
           style={{
-            position: "absolute",
+            position:
+              "absolute",
             inset: 0,
             width: "100%",
             height: "100%",
-
-            // mirror overlay too so it matches the preview
-            transform: "scaleX(-1)",
-
-            pointerEvents: "none",
+            transform:
+              "scaleX(-1)",
+            pointerEvents:
+              "none",
           }}
         />
       </div>
+
+      <p className="camera-hint">
+        Keep your hand clearly visible
+        inside the frame.
+      </p>
     </div>
   );
 }
