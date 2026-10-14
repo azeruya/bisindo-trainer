@@ -5,10 +5,13 @@ import numpy as np
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
     confusion_matrix,
+    f1_score,
+    recall_score,
 )
 
 from collections import Counter
@@ -17,9 +20,21 @@ from collections import Counter
 DATA_DIR = (
     Path(__file__).resolve().parents[1]
     / "data"
-    / "smoke-test"
+    / "bisindo-v1"
 )
 
+TEST_SIGNER = "s04"
+
+THRESHOLDS = [
+    0.50,
+    0.60,
+    0.70,
+    0.75,
+    0.80,
+    0.85,
+    0.90,
+    0.95,
+]
 
 def load_jsonl_files(data_dir: Path):
     X = []
@@ -180,26 +195,29 @@ def split_by_signer(
     y,
     attempt_ids,
     signer_ids,
+    test_signer,
 ):
     signers = sorted(set(signer_ids))
 
-    if len(signers) != 2:
+    if test_signer not in signers:
         raise ValueError(
-            "Signer split currently expects exactly "
-            f"2 signers, but found {len(signers)}:\n"
-            + "\n".join(map(str, signers))
+            f"Unknown test signer: {test_signer}. "
+            f"Available signers: {signers}"
         )
 
-    train_signer = signers[0]
-    test_signer = signers[1]
-
-    train_mask = signer_ids == train_signer
+    train_mask = signer_ids != test_signer
     test_mask = signer_ids == test_signer
+
+    train_signers = sorted(
+        set(signer_ids[train_mask])
+    )
 
     print()
     print("Signer split")
     print("------------")
-    print(f"TRAIN: {train_signer}")
+    print(
+        f"TRAIN: {', '.join(map(str, train_signers))}"
+    )
     print(f"TEST : {test_signer}")
 
     return (
@@ -276,8 +294,36 @@ def evaluate_model(
         y_train,
     )
 
-    predictions = model.predict(
-        X_test
+    evaluate_thresholds(
+        model,
+        X_test,
+        y_test,
+        attempt_ids_test,
+        THRESHOLDS,
+    )
+
+    probabilities = model.predict_proba(X_test)
+
+    best_indices = np.argmax(
+        probabilities,
+        axis=1,
+    )
+
+    confidences = np.max(
+        probabilities,
+        axis=1,
+    )
+
+    predictions = model.classes_[
+        best_indices
+    ]
+
+    CONFIDENCE_THRESHOLD = 0.60
+
+    predictions = np.where(
+        confidences >= CONFIDENCE_THRESHOLD,
+        predictions,
+        "no_sign",
     )
 
     accuracy = accuracy_score(
@@ -287,6 +333,12 @@ def evaluate_model(
 
     labels = sorted(
         set(y_train) | set(y_test)
+    )
+
+    print()
+    print(
+        f"Detailed evaluation "
+        f"(threshold={CONFIDENCE_THRESHOLD:.2f})"
     )
 
     print(
@@ -353,6 +405,138 @@ def evaluate_no_sign(y_true, y_pred):
     print(f"False accepts: {false_accepts}")
     print(f"False accept rate: {false_accept_rate:.4f}")
 
+def get_attempt_accuracy(
+    y_true,
+    y_pred,
+    attempt_ids,
+):
+    correct = 0
+    total = 0
+
+    for attempt_id in sorted(set(attempt_ids)):
+        mask = attempt_ids == attempt_id
+
+        true_labels = y_true[mask]
+        predicted_labels = y_pred[mask]
+
+        true_label = Counter(
+            true_labels
+        ).most_common(1)[0][0]
+
+        predicted_label = Counter(
+            predicted_labels
+        ).most_common(1)[0][0]
+
+        if true_label == predicted_label:
+            correct += 1
+
+        total += 1
+
+    return correct / total if total else 0.0
+
+def evaluate_thresholds(
+    model,
+    X_test,
+    y_test,
+    attempt_ids_test,
+    thresholds,
+):
+    probabilities = model.predict_proba(X_test)
+
+    best_indices = np.argmax(
+        probabilities,
+        axis=1,
+    )
+
+    confidences = np.max(
+        probabilities,
+        axis=1,
+    )
+
+    base_predictions = model.classes_[
+        best_indices
+    ]
+
+    valid_mask = y_test != "no_sign"
+    no_sign_mask = y_test == "no_sign"
+
+    print()
+    print("Threshold sweep")
+    print("-" * 78)
+
+    print(
+        f"{'Threshold':<10}"
+        f"{'Accuracy':<12}"
+        f"{'Macro F1':<12}"
+        f"{'Valid Recall':<15}"
+        f"{'NO_SIGN FAR':<15}"
+        f"{'Attempt Acc':<12}"
+    )
+
+    print("-" * 78)
+
+    for threshold in thresholds:
+        predictions = np.where(
+            confidences >= threshold,
+            base_predictions,
+            "no_sign",
+        )
+
+        accuracy = accuracy_score(
+            y_test,
+            predictions,
+        )
+
+        macro_f1 = f1_score(
+            y_test,
+            predictions,
+            average="macro",
+            zero_division=0,
+        )
+
+        # Recall among actual valid signs only.
+        valid_labels = sorted(
+            label
+            for label in set(y_test)
+            if label != "no_sign"
+        )
+
+        valid_recall = recall_score(
+            y_test[valid_mask],
+            predictions[valid_mask],
+            labels=valid_labels,
+            average="macro",
+            zero_division=0,
+        )
+
+        if np.sum(no_sign_mask) > 0:
+            false_accepts = np.sum(
+                predictions[no_sign_mask]
+                != "no_sign"
+            )
+
+            no_sign_far = (
+                false_accepts
+                / np.sum(no_sign_mask)
+            )
+        else:
+            no_sign_far = 0.0
+
+        attempt_accuracy = get_attempt_accuracy(
+            y_test,
+            predictions,
+            attempt_ids_test,
+        )
+
+        print(
+            f"{threshold:<10.2f}"
+            f"{accuracy:<12.4f}"
+            f"{macro_f1:<12.4f}"
+            f"{valid_recall:<15.4f}"
+            f"{no_sign_far:<15.4f}"
+            f"{attempt_accuracy:<12.4f}"
+        )
+
 
 def main():
     (
@@ -383,7 +567,20 @@ def main():
         y,
         attempt_ids,
         signer_ids,
+        test_signer=TEST_SIGNER,
     )
+
+    train_labels = set(y_train)
+    test_labels = set(y_test)
+
+    missing_in_test = train_labels - test_labels
+    missing_in_train = test_labels - train_labels
+
+    if missing_in_test:
+        print("WARNING missing from test:", sorted(missing_in_test))
+
+    if missing_in_train:
+        print("WARNING missing from train:", sorted(missing_in_train))
 
     print()
     print("Split sizes")
@@ -425,6 +622,13 @@ def main():
         random_state=42,
     )
 
+    mlp = MLPClassifier(
+        hidden_layer_sizes=(128, 64),
+        activation="relu",
+        max_iter=500,
+        random_state=42,
+    )
+
     evaluate_model(
         "k-Nearest Neighbors",
         knn,
@@ -438,6 +642,16 @@ def main():
     evaluate_model(
         "Random Forest",
         rf,
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+        attempt_test,
+    )
+
+    evaluate_model(
+        "MLP",
+        mlp,
         X_train,
         X_test,
         y_train,

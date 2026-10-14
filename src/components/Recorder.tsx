@@ -17,7 +17,7 @@ interface RecordingAttempt {
   };
 }
 
-const LETTERS = ["A", "B", "C", "no_sign"]
+const LETTERS = ["A", "B", "C", "D", "E", "F", "P", "T", "no_sign"]
 const RECORDING_DURATION_MS = 2000;
 const COUNTDOWN_SECONDS = 3;
 const RECORD_INTERVAL_MS = 40; // ~25 FPS
