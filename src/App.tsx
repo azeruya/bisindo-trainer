@@ -1,15 +1,33 @@
+import {
+  useState,
+} from "react";
+
+import Landing from "./components/Landing";
 import Trainer from "./components/Trainer";
-import ReferenceRecorder from "./components/ReferenceRecorder";
 
-function App() {
-  const isReferenceMode =
-    window.location.search.includes(
-      "reference"
+type AppView =
+  | "landing"
+  | "practice";
+
+export default function App() {
+  const [view, setView] =
+    useState<AppView>("landing");
+
+  if (view === "landing") {
+    return (
+      <Landing
+        onStart={() =>
+          setView("practice")
+        }
+      />
     );
+  }
 
-  return isReferenceMode
-    ? <ReferenceRecorder />
-    : <Trainer />;
+  return (
+    <Trainer
+      onBack={() =>
+        setView("landing")
+      }
+    />
+  );
 }
-
-export default App;

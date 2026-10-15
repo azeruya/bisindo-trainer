@@ -69,7 +69,13 @@ type PracticeStatus =
   | "correct"
   | "finished";
 
-export default function Trainer() {
+type TrainerProps = {
+  onBack?: () => void;
+};
+
+export default function Trainer({
+  onBack,
+}: TrainerProps) {
   const {
     isReady,
     error,
@@ -547,10 +553,23 @@ export default function Trainer() {
       <section className="trainer-shell">
         <header className="trainer-header">
           <div className="brand-block">
-            <h1>learn your BISINDO</h1>
+            <h1>
+              learn your BISINDO
+            </h1>
+
             <p className="header-subtitle">
               Real-time fingerspelling practice
             </p>
+
+            {onBack && (
+              <button
+                type="button"
+                className="back-to-guide"
+                onClick={onBack}
+              >
+                ← Review hand guide
+              </button>
+            )}
           </div>
 
           {status !== "finished" && (
