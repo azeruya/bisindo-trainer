@@ -8,15 +8,23 @@ import {
     mediaPipeToDetectedHands, 
     buildFeatures 
 } from "../lib/landmark-core";
+import type { DetectedHand } from "../lib/landmark-core";
 
 interface HandCameraProps {
-    onFeatures?: (
-        features: number[],
-        handCount: number
-    ) => void;
+  onFeatures?: (
+    features: number[],
+    handCount: number
+  ) => void;
+
+  onLandmarks?: (
+    hands: DetectedHand[]
+  ) => void;
 }
 
-export default function HandCamera({ onFeatures }: HandCameraProps) {
+export default function HandCamera({
+  onFeatures,
+  onLandmarks,
+}: HandCameraProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -25,13 +33,20 @@ export default function HandCamera({ onFeatures }: HandCameraProps) {
   const lastVideoTimeRef = useRef(-1);
 
   const [status, setStatus] = useState("Loading MediaPipe...");
-  const [handCount, setHandCount] = useState(0);
 
   const onFeaturesRef = useRef(onFeatures);
 
   useEffect(() => {
     onFeaturesRef.current = onFeatures;
   }, [onFeatures]);
+
+  const onLandmarksRef =
+  useRef(onLandmarks);
+
+  useEffect(() => {
+    onLandmarksRef.current =
+      onLandmarks;
+  }, [onLandmarks]);
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -118,21 +133,10 @@ export default function HandCamera({ onFeatures }: HandCameraProps) {
         );
 
         const detectedHands = mediaPipeToDetectedHands(result);
+        onLandmarksRef.current?.(detectedHands);
 
         const features = buildFeatures(detectedHands);
 
-        const finite = features.every(Number.isFinite);
-
-        //console.log(
-        //  "hands:",
-        //  detectedHands.length,
-        //  "features:",
-        //  features.length,
-        //  "finite:",
-        //  finite
-        //);
-
-        setHandCount(detectedHands.length);
         onFeaturesRef.current?.(features, detectedHands.length);
 
         const ctx = canvas.getContext("2d");
@@ -153,12 +157,6 @@ export default function HandCamera({ onFeatures }: HandCameraProps) {
 
             drawingUtils.drawLandmarks(landmarks);
           }
-        }
-
-        // useful for next step:
-        if (result.landmarks.length > 0) {
-          // console.log("Landmarks:", result.landmarks);
-          // console.log("Handedness:", result.handedness);
         }
       }
 
