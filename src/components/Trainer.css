@@ -2096,3 +2096,32 @@
     display: none;
   }
 }
+
+.back-to-guide {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-top: 8px;
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  color: var(--ink-soft);
+
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.back-to-guide:hover {
+  color: var(--ink);
+  transform: translateX(-2px);
+}

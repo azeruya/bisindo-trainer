@@ -567,7 +567,7 @@ export default function Trainer({
                 className="back-to-guide"
                 onClick={onBack}
               >
-                ← Review hand guide
+                ← Review signs
               </button>
             )}
           </div>

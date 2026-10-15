@@ -47,6 +47,7 @@ export default function Landing({
       .catch(console.error);
   }, []);
 
+
   return (
     <main className="landing-page">
       <section className="landing-shell">
@@ -67,12 +68,6 @@ export default function Landing({
             </p>
           </div>
 
-          <button
-            className="landing-start-button"
-            onClick={onStart}
-          >
-            Start practice →
-          </button>
         </header>
 
         <section className="guide-library">
