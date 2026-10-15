@@ -1,0 +1,353 @@
+.landing-page {
+  min-height: 100vh;
+
+  padding:
+    40px 22px 60px;
+
+  font-family:
+    var(--font-body);
+
+  color:
+    var(--ink);
+
+  background:
+    radial-gradient(
+      circle at 8% 8%,
+      rgba(244, 180, 212, 0.18),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at 92% 84%,
+      rgba(191, 228, 251, 0.22),
+      transparent 30%
+    ),
+    var(--page);
+}
+
+.landing-shell {
+  width:
+    min(1180px, 100%);
+
+  margin:
+    0 auto;
+}
+
+.landing-hero {
+  display: flex;
+
+  align-items:
+    flex-end;
+
+  justify-content:
+    space-between;
+
+  gap: 30px;
+
+  margin-bottom:
+    44px;
+}
+
+.landing-hero h1 {
+  margin:
+    4px 0 10px;
+
+  font-family:
+    var(--font-display);
+
+  font-size:
+    clamp(
+      2.8rem,
+      6vw,
+      4.5rem
+    );
+
+  line-height: 0.95;
+
+  color:
+    var(--ink);
+}
+
+.landing-copy {
+  max-width: 520px;
+
+  margin: 0;
+
+  color:
+    var(--ink-soft);
+
+  font-weight: 600;
+
+  line-height: 1.6;
+}
+
+.landing-eyebrow {
+  margin: 0;
+
+  font-size: 0.72rem;
+
+  font-weight: 800;
+
+  text-transform:
+    uppercase;
+
+  letter-spacing:
+    0.08em;
+
+  color:
+    var(--ink-soft);
+}
+
+.landing-start-button {
+  flex-shrink: 0;
+
+  padding:
+    12px 20px;
+
+  border:
+    2px solid
+    var(--ink);
+
+  border-radius:
+    16px;
+
+  background:
+    var(--yellow);
+
+  box-shadow:
+    var(--shadow-card);
+
+  color:
+    var(--ink);
+
+  font: inherit;
+
+  font-family:
+    var(--font-display);
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.guide-library {
+  padding:
+    28px;
+
+  border:
+    2px solid
+    var(--ink);
+
+  border-radius:
+    28px;
+
+  background:
+    var(--paper);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+.guide-library-heading {
+  display: flex;
+
+  align-items:
+    flex-end;
+
+  justify-content:
+    space-between;
+
+  gap: 24px;
+
+  margin-bottom:
+    22px;
+}
+
+.guide-library-heading h2 {
+  margin:
+    3px 0 0;
+
+  font-family:
+    var(--font-display);
+
+  font-size:
+    2rem;
+}
+
+.guide-library-heading > p {
+  max-width: 320px;
+
+  margin: 0;
+
+  color:
+    var(--ink-soft);
+
+  font-size: 0.85rem;
+
+  font-weight: 600;
+}
+
+.guide-library-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  gap: 14px;
+}
+
+.landing-guide-card {
+  display: flex;
+
+  flex-direction:
+    column;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding:
+    15px;
+
+  border:
+    1.5px solid
+    rgba(53, 38, 79, 0.16);
+
+  border-radius:
+    20px;
+
+  background:
+    var(--lavender-light);
+}
+
+.landing-letter {
+  display: grid;
+
+  width: 36px;
+  height: 36px;
+
+  place-items: center;
+
+  align-self:
+    flex-start;
+
+  border:
+    1.5px solid
+    var(--ink);
+
+  border-radius:
+    10px;
+
+  background:
+    var(--sky);
+
+  font-weight: 800;
+}
+
+.landing-guide-visual {
+  display: grid;
+
+  min-height:
+    180px;
+
+  place-items: center;
+
+  width: 100%;
+}
+
+.landing-guide-visual
+.landmark-guide-svg {
+  width:
+    min(
+      180px,
+      100%
+    );
+}
+
+.landing-guide-card > p {
+  margin: 0;
+
+  font-size:
+    0.7rem;
+
+  font-weight: 700;
+
+  color:
+    var(--ink-soft);
+}
+
+.landing-bottom-cta {
+  display: flex;
+
+  align-items: center;
+
+  justify-content:
+    center;
+
+  gap: 18px;
+
+  margin-top: 26px;
+
+  text-align: center;
+}
+
+.landing-bottom-cta p {
+  margin: 0;
+
+  font-family:
+    var(--font-display);
+
+  font-size:
+    1.1rem;
+
+  font-weight: 600;
+}
+
+@media (
+  max-width: 900px
+) {
+  .guide-library-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .landing-hero {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+  }
+}
+
+@media (
+  max-width: 560px
+) {
+  .guide-library {
+    padding:
+      18px;
+  }
+
+  .guide-library-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .guide-library-heading {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+  }
+
+  .landing-bottom-cta {
+    flex-direction:
+      column;
+  }
+}
